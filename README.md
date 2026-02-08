@@ -42,8 +42,14 @@ pip install -r requirements.txt
 
 ### 4. 서버 실행
 
+개발 모드 (단일 프로세스):
 ```bash
 uvicorn app.main:app --host 0.0.0.0 --port 8000
+```
+
+프로덕션 모드 (멀티 워커):
+```bash
+gunicorn app.main:app -c gunicorn.conf.py
 ```
 
 서버 시작 시 자동으로:
@@ -54,11 +60,27 @@ uvicorn app.main:app --host 0.0.0.0 --port 8000
 
 - Health Check: http://localhost:8000/health
 - Swagger UI: http://localhost:8000/docs
-- ReDoc: http://localhost:8000/redoc
 
 ## 서버 포트
 
 **8000** (기본값)
+
+## 인증
+
+수강신청/취소 API는 JWT 인증이 필요합니다.
+
+```bash
+# 1. 로그인 (학번으로 인증)
+curl -X POST http://localhost:8000/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"student_number": "S00001"}'
+
+# 2. 반환된 access_token으로 수강신청
+curl -X POST http://localhost:8000/enrollments \
+  -H "Authorization: Bearer <access_token>" \
+  -H "Content-Type: application/json" \
+  -d '{"student_id": 1, "course_id": 1}'
+```
 
 ## 테스트 실행
 
@@ -69,6 +91,11 @@ pytest tests/ -v
 동시성 테스트만 실행:
 ```bash
 pytest tests/test_concurrency.py -v
+```
+
+부하 테스트:
+```bash
+pytest tests/test_load.py -v -s
 ```
 
 ## API 문서

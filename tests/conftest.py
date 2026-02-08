@@ -5,6 +5,7 @@ from httpx import ASGITransport, AsyncClient
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
+from app.auth import create_access_token
 from app.config import settings
 from app.database import get_db
 from app.main import app
@@ -40,6 +41,12 @@ async def _ensure_db_setup():
 
     await engine.dispose()
     _db_initialized = True
+
+
+def auth_headers(student_id: int) -> dict[str, str]:
+    """Create Authorization headers with a JWT token for the given student."""
+    token = create_access_token(student_id)
+    return {"Authorization": f"Bearer {token}"}
 
 
 @pytest_asyncio.fixture

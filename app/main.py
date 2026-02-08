@@ -6,7 +6,7 @@ from starlette.middleware.base import BaseHTTPMiddleware
 
 from app.database import AsyncSessionLocal, engine
 from app.models import Base
-from app.routers import courses, departments, enrollments, health, professors, students
+from app.routers import auth, courses, departments, enrollments, health, professors, students
 from app.seed import seed_database
 
 
@@ -55,6 +55,7 @@ app = FastAPI(
 app.add_middleware(SeedMiddleware)
 
 app.include_router(health.router)
+app.include_router(auth.router)
 app.include_router(departments.router)
 app.include_router(professors.router)
 app.include_router(courses.router)

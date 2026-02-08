@@ -127,11 +127,20 @@ async def register(student_id: int, course_id: int, db: AsyncSession) -> Enrollm
     return enrollment
 
 
-async def cancel(enrollment_id: int, db: AsyncSession) -> None:
-    """Cancel an enrollment by deleting it."""
+async def cancel(enrollment_id: int, db: AsyncSession, student_id: int | None = None) -> None:
+    """Cancel an enrollment by deleting it.
+
+    If student_id is provided, verifies that the enrollment belongs to that student.
+    """
     enrollment = await db.get(Enrollment, enrollment_id)
     if not enrollment:
         raise HTTPException(status_code=404, detail="Enrollment not found")
+
+    if student_id is not None and enrollment.student_id != student_id:
+        raise HTTPException(
+            status_code=403,
+            detail="Cannot cancel another student's enrollment",
+        )
 
     await db.delete(enrollment)
     await db.commit()
