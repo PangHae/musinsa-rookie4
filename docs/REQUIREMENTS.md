@@ -191,7 +191,7 @@ Python의 GIL(Global Interpreter Lock)로 인해 단일 프로세스에서는 CP
 
 ```bash
 # 프로덕션 실행
-gunicorn app.main:app -c gunicorn.conf.py
+PYTHONPATH=src gunicorn app.main:app -c gunicorn.conf.py
 ```
 
 | 설정 | 값 | 근거 |

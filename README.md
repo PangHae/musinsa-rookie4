@@ -44,12 +44,12 @@ pip install -r requirements.txt
 
 개발 모드 (단일 프로세스):
 ```bash
-uvicorn app.main:app --host 0.0.0.0 --port 8000
+PYTHONPATH=src uvicorn app.main:app --host 0.0.0.0 --port 8000
 ```
 
 프로덕션 모드 (멀티 워커):
 ```bash
-gunicorn app.main:app -c gunicorn.conf.py
+PYTHONPATH=src gunicorn app.main:app -c gunicorn.conf.py
 ```
 
 서버 시작 시 자동으로:

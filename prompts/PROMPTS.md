@@ -41,3 +41,7 @@
 ## #test-report-and-prompt-merge
 
 > 1. docs에 test pass, fail과 관련된 문서 추가, 어떤 test에 pass하고 fail하는지, 어떤 테스트들이 있는지 작성. 2. prompts 한 개의 문서로 통합. 제목을 단계로 구분하고(ex. #initial-setup), 입력한 prompt들을 나열. 해당 프롬프트 실행을 통해 어떤 작업을 했는지는 명시하지 않기.
+
+## #move-app-to-src
+
+> 1. /app 폴더를 /src 내부로 이동, 2. /src/app이 실행될 수 있도록 실행 관련해서 작성된 명령어 수정, 3. 정상 실행 여부 확인, 4. prompt 로그 작성, 5. 변경사항 commit and push

@@ -90,12 +90,12 @@
 
 ### 개발 환경 (단일 프로세스)
 ```bash
-uvicorn app.main:app --host 0.0.0.0 --port 8000
+PYTHONPATH=src uvicorn app.main:app --host 0.0.0.0 --port 8000
 ```
 
 ### 프로덕션 환경 (멀티 프로세스)
 ```bash
-gunicorn app.main:app -c gunicorn.conf.py
+PYTHONPATH=src gunicorn app.main:app -c gunicorn.conf.py
 ```
 
 `gunicorn.conf.py` 설정:
