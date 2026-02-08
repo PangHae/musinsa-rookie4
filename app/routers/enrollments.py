@@ -4,6 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.auth import get_current_student
 from app.database import get_db
 from app.models.student import Student
+from app.rate_limiter import enrollment_rate_limiter
 from app.schemas.enrollment import EnrollmentRequest, EnrollmentResponse
 from app.services import enrollment_service
 
@@ -18,8 +19,10 @@ async def register_course(
 ):
     """Register for a course. Requires JWT authentication.
 
-    The student_id is extracted from the JWT token, so a student can only
-    register for themselves — not on behalf of another student.
+    Anti-macro protections applied:
+    - Rate limit: max 5 requests per 10 seconds per student
+    - Minimum interval: 1 second between consecutive requests
+    - Failure penalty: 10 consecutive failures → 30 second block
     """
     if request.student_id != current_student.id:
         raise HTTPException(
@@ -27,11 +30,22 @@ async def register_course(
             detail="Cannot register on behalf of another student",
         )
 
-    enrollment = await enrollment_service.register(
-        student_id=current_student.id,
-        course_id=request.course_id,
-        db=db,
-    )
+    # Anti-macro: check rate limit
+    allowed, reason = await enrollment_rate_limiter.check(current_student.id)
+    if not allowed:
+        raise HTTPException(status_code=429, detail=reason)
+
+    try:
+        enrollment = await enrollment_service.register(
+            student_id=current_student.id,
+            course_id=request.course_id,
+            db=db,
+        )
+    except HTTPException:
+        await enrollment_rate_limiter.record_failure(current_student.id)
+        raise
+
+    await enrollment_rate_limiter.record_success(current_student.id)
     return EnrollmentResponse(
         id=enrollment.id,
         student_id=enrollment.student_id,

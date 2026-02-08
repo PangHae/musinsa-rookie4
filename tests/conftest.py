@@ -10,6 +10,7 @@ from app.config import settings
 from app.database import get_db
 from app.main import app
 from app.models import Base
+from app.rate_limiter import enrollment_rate_limiter
 from app.seed import seed_database
 
 TEST_DB_URL = (
@@ -64,6 +65,11 @@ async def db() -> AsyncGenerator[AsyncSession]:
 @pytest_asyncio.fixture
 async def client() -> AsyncGenerator[AsyncClient]:
     await _ensure_db_setup()
+
+    # Reset rate limiter state between tests to prevent interference
+    enrollment_rate_limiter._requests.clear()
+    enrollment_rate_limiter._failures.clear()
+    enrollment_rate_limiter._blocked_until.clear()
 
     engine = create_async_engine(
         TEST_DB_URL, pool_size=20, max_overflow=10, isolation_level="READ_COMMITTED"

@@ -5,15 +5,30 @@ from sqlalchemy import delete
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.enrollment import Enrollment
+from app.rate_limiter import enrollment_rate_limiter
 from tests.conftest import auth_headers
 
 
 @pytest_asyncio.fixture(autouse=True)
 async def clean_enrollments(db: AsyncSession):
-    """Clean enrollments before each test."""
+    """Clean enrollments and disable rate limiter during tests."""
     await db.execute(delete(Enrollment))
     await db.commit()
+
+    # Disable rate limiter for functional tests
+    orig_min_interval = enrollment_rate_limiter.min_interval_seconds
+    orig_max_requests = enrollment_rate_limiter.max_requests
+    enrollment_rate_limiter.min_interval_seconds = 0
+    enrollment_rate_limiter.max_requests = 1000
+    enrollment_rate_limiter._requests.clear()
+    enrollment_rate_limiter._failures.clear()
+    enrollment_rate_limiter._blocked_until.clear()
+
     yield
+
+    # Restore original settings
+    enrollment_rate_limiter.min_interval_seconds = orig_min_interval
+    enrollment_rate_limiter.max_requests = orig_max_requests
     await db.execute(delete(Enrollment))
     await db.commit()
 
