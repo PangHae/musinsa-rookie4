@@ -3,6 +3,7 @@ from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
 
+from app.auth import get_current_student
 from app.database import get_db
 from app.models.course import Course
 from app.models.course_schedule import CourseSchedule
@@ -58,8 +59,11 @@ async def get_students(
 @router.get("/{student_id}/timetable", response_model=TimetableResponse)
 async def get_timetable(
     student_id: int,
+    current_student: Student = Depends(get_current_student),
     db: AsyncSession = Depends(get_db),
 ):
+    if current_student.id != student_id:
+        raise HTTPException(status_code=403, detail="Access denied")
     # Verify student exists
     student = await db.get(Student, student_id)
     if not student:
