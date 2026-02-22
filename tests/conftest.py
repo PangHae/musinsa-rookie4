@@ -5,6 +5,8 @@ from httpx import ASGITransport, AsyncClient
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
+import redis.asyncio as aioredis
+
 from app.auth import create_access_token
 from app.config import settings
 from app.database import get_db
@@ -66,10 +68,11 @@ async def db() -> AsyncGenerator[AsyncSession]:
 async def client() -> AsyncGenerator[AsyncClient]:
     await _ensure_db_setup()
 
-    # Reset rate limiter state between tests to prevent interference
-    enrollment_rate_limiter._requests.clear()
-    enrollment_rate_limiter._failures.clear()
-    enrollment_rate_limiter._blocked_until.clear()
+    # Reset Redis rate limiter state between tests to prevent interference
+    _r = aioredis.from_url(settings.REDIS_URL, decode_responses=True)
+    async for key in _r.scan_iter(f"{enrollment_rate_limiter.key_prefix}:*"):
+        await _r.delete(key)
+    await _r.aclose()
 
     engine = create_async_engine(
         TEST_DB_URL, pool_size=20, max_overflow=10, isolation_level="READ_COMMITTED"

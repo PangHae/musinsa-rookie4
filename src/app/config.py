@@ -17,6 +17,9 @@ class Settings(BaseSettings):
     # Server tuning
     WORKERS: int = 4
 
+    # Redis
+    REDIS_URL: str = "redis://localhost:6379"
+
     # Auth
     JWT_SECRET: str = "change-me-in-production"
     JWT_ALGORITHM: str = "HS256"
