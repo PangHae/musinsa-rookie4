@@ -17,10 +17,11 @@ security = HTTPBearer()
 
 def create_access_token(student_id: int) -> str:
     """Create a JWT token for a student."""
+    now = datetime.now(timezone.utc)
     payload = {
         "sub": str(student_id),
-        "exp": datetime.now(timezone.utc) + timedelta(minutes=settings.JWT_EXPIRE_MINUTES),
-        "iat": datetime.now(timezone.utc),
+        "exp": now + timedelta(minutes=settings.JWT_EXPIRE_MINUTES),
+        "iat": now,
     }
     return jwt.encode(payload, settings.JWT_SECRET, algorithm=settings.JWT_ALGORITHM)
 

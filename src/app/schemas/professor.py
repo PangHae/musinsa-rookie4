@@ -6,6 +6,13 @@ class ProfessorResponse(BaseModel):
     name: str
     employee_number: str
     department_id: int
-    department_name: str | None = None
+    department_name: str
 
     model_config = {"from_attributes": True}
+
+
+class PaginatedProfessorResponse(BaseModel):
+    total: int
+    page: int
+    size: int
+    items: list[ProfessorResponse]

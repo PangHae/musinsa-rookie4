@@ -1,4 +1,4 @@
-from sqlalchemy import ForeignKey, Integer, String, Time
+from sqlalchemy import ForeignKey, Index, Integer, String, Time
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models.base import Base
@@ -6,6 +6,9 @@ from app.models.base import Base
 
 class CourseSchedule(Base):
     __tablename__ = "course_schedules"
+    __table_args__ = (
+        Index("ix_course_schedules_course_id", "course_id"),
+    )
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     course_id: Mapped[int] = mapped_column(
