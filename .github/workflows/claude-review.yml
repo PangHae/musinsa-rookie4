@@ -14,11 +14,20 @@ jobs:
   review:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
       - uses: anthropics/claude-code-action@v1
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
-          prompt: "/review"
-          claude_args: "--max-turns 5"
+          show_full_output: "true"
+          prompt: |
+            Please review this pull request thoroughly.
+
+            Focus on the following areas:
+            1. **Bugs & Logic errors** - Identify any incorrect logic, off-by-one errors, null pointer risks, or race conditions
+            2. **Security vulnerabilities** - Check for SQL injection, XSS, insecure deserialization, exposed secrets, or improper auth
+            3. **Performance issues** - Spot inefficient queries (N+1), unnecessary loops, missing indexes, or blocking I/O
+            4. **Code quality** - Evaluate readability, naming conventions, duplication, and adherence to SOLID principles
+            5. **Concurrency correctness** - Given this is a course registration system, pay special attention to thread-safety and transaction isolation
+
+            Provide specific, actionable feedback with file names and line numbers where applicable.
+            Summarize your findings at the end with a clear APPROVE / REQUEST CHANGES recommendation.
+          claude_args: "--max-turns 10"
