@@ -1,0 +1,79 @@
+name: Claude PR Review
+
+on:
+  pull_request:
+    types: [opened]
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+      id-token: write
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - uses: anthropics/claude-code-action@v1
+        env:
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          REPO: ${{ github.repository }}
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          prompt: |
+            REPO: ${{ github.repository }}
+            PR NUMBER: ${{ github.event.pull_request.number }}
+
+            이 PR을 아래 기준으로 리뷰해주세요.
+            리뷰 결과는 반드시 `gh pr comment`로 PR에 코멘트로 남겨주세요.
+            직접 메시지로 출력하지 마세요.
+
+            ## 리뷰 기준
+
+            ### 🔒 보안
+            - 하드코딩된 시크릿/자격증명 여부
+            - 인증·인가 누락 엔드포인트
+            - SQL Injection, IDOR 등 OWASP Top 10 취약점
+            - 민감 정보 에러 메시지 노출
+
+            ### ⚡ 성능 및 효율성
+            - N+1 쿼리 문제
+            - DB 인덱스 누락
+            - 불필요한 반복 연산
+            - 페이지네이션 누락 (대용량 조회)
+
+            ### 🏗️ 코드 품질
+            - 코드 중복 (DRY 원칙)
+            - 에러 핸들링 일관성
+            - 타입 힌트 정확성
+            - 함수/클래스 단일 책임 원칙
+
+            ### 🔄 동시성 (이 프로젝트 핵심)
+            - 트랜잭션 범위 적절성
+            - Race condition 가능성
+            - 락 전략의 올바른 적용
+
+            ## 출력 형식
+            다음 형식으로 PR 코멘트를 작성해주세요:
+
+            ```
+            ## 🤖 Claude PR Review
+
+            ### 요약
+            (변경사항 한 줄 요약)
+
+            ### ✅ 잘된 점
+            (긍정적인 부분)
+
+            ### ⚠️ 개선 필요
+            (문제점과 수정 제안, 심각도 표기: [Critical/High/Medium/Low])
+
+            ### 💡 추가 제안
+            (선택적 개선 사항)
+            ```
+
+          claude_args: |
+            --allowedTools "Bash(gh pr comment:*),Bash(gh pr diff:*),Bash(gh pr view:*)"
