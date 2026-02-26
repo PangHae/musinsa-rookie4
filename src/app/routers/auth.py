@@ -1,17 +1,22 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth import create_access_token
 from app.database import get_db
 from app.models.student import Student
+from app.rate_limiter import enrollment_rate_limiter
 from app.schemas.auth import LoginRequest, LoginResponse
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
 
 @router.post("/login", response_model=LoginResponse)
-async def login(request: LoginRequest, db: AsyncSession = Depends(get_db)):
+async def login(request: LoginRequest, req: Request, db: AsyncSession = Depends(get_db)):
+    client_ip = req.client.host
+    allowed, reason = await enrollment_rate_limiter.check(client_ip)
+    if not allowed:
+        raise HTTPException(status_code=429, detail=reason)
     """Authenticate a student by student_number and return a JWT token."""
     result = await db.execute(
         select(Student).where(Student.student_number == request.student_number)

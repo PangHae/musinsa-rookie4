@@ -17,8 +17,8 @@ class Settings(BaseSettings):
     # Server tuning
     WORKERS: int = 4
 
-    # Auth
-    JWT_SECRET: str = "change-me-in-production"
+    # Auth — no default: server refuses to start if JWT_SECRET is not set in environment
+    JWT_SECRET: str
     JWT_ALGORITHM: str = "HS256"
     JWT_EXPIRE_MINUTES: int = 60
 

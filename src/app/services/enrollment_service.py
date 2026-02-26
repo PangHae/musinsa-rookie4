@@ -80,8 +80,7 @@ async def register(student_id: int, course_id: int, db: AsyncSession) -> Enrollm
     if current_credits + course.credits > 18:
         raise HTTPException(
             status_code=409,
-            detail=f"Credit limit exceeded (current: {current_credits}, "
-            f"attempting: {course.credits}, max: 18)",
+            detail="Credit limit exceeded. Maximum 18 credits per semester.",
         )
 
     # 6. Check schedule conflicts
@@ -111,8 +110,7 @@ async def register(student_id: int, course_id: int, db: AsyncSession) -> Enrollm
                 if target.start_time < enrolled.end_time and target.end_time > enrolled.start_time:
                     raise HTTPException(
                         status_code=409,
-                        detail=f"Schedule conflict on {target.day_of_week} "
-                        f"({target.start_time}-{target.end_time})",
+                        detail="Schedule conflict with an already enrolled course.",
                     )
 
     # 7. Insert enrollment
