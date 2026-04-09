@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from sqlalchemy import DateTime, ForeignKey, Integer, UniqueConstraint, func
+from sqlalchemy import DateTime, ForeignKey, Index, Integer, UniqueConstraint, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models.base import Base
@@ -10,6 +10,8 @@ class Enrollment(Base):
     __tablename__ = "enrollments"
     __table_args__ = (
         UniqueConstraint("student_id", "course_id", name="uq_student_course"),
+        Index("ix_enrollments_student_id", "student_id"),
+        Index("ix_enrollments_course_id", "course_id"),
     )
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
